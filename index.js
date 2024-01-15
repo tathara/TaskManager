@@ -1,10 +1,19 @@
 import TelegramBot from 'node-telegram-bot-api';
-import config from 'config';
-import { CommonUser, RootUser } from './users.js';
+//import UserTaskController from './user-task.controller.js';
 
-const telegramToken = config.get('TELEGRAM_TOKEN');
+const telegramToken = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(telegramToken, { polling: true });
-const user = new CommonUser('Artur', 'Back-end');
+const authorizationUrl = 'localhost:8080/authorization';
+const registrationUrl = 'localhost:8080/authorization';
+
+
+const authOptions = {
+    reply_markup: JSON.stringify({
+        inline_keyboard: [
+            [{ text: '⬆️Авторизация', web_app: { url: authorizationUrl } }, { text: '⬆️ Регистрация', web_app: { url: registrationUrl } }],
+        ]
+    })
+};
 
 const botOptions = {
     reply_markup: JSON.stringify({
@@ -17,7 +26,7 @@ const botOptions = {
 };
 
 bot.setMyCommands([
-    { command: '/start', description: 'Начальное приветствие' },
+    { command: '/start', description: 'Аутентификация' },
 ]);
 
 bot.on('message', async msg => {
@@ -25,8 +34,8 @@ bot.on('message', async msg => {
     const chatId = msg.chat.id;
     const userName = msg.chat.first_name;
 
-    if (text === '/start') return bot.sendMessage(chatId, `✅ Привет, ${userName}! Я помогу вам разобраться с управлением над командными задачами.`, botOptions);
-    return bot.sendMessage(chatId, `⛔️ Я не понимаю о чем ты, попробуй что-нибудь другое!`, botOptions);
+    if (text === '/start') return bot.sendMessage(chatId, `✅ Привет, ${userName}! Я помогу вам разобраться с управлением над командными задачами.`, authOptions);
+    return bot.sendMessage(chatId, `⛔️ Я не понимаю о чем ты!`,);
 });
 
 bot.on('callback_query', async msg => {
