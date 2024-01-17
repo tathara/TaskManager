@@ -1,25 +1,27 @@
 import TelegramBot from 'node-telegram-bot-api';
-//import UserTaskController from './user-task.controller.js';
+import { UserModel } from './db/models.js';
 
+let user;
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(telegramToken, { polling: true });
-
 
 const authOptions = {
     reply_markup: JSON.stringify({
         keyboard: [
-            [{ text: '⬆️Авторизация', web_app: { url: process.env.AUTHORIZATION_URL } }, { text: '⬆️ Регистрация', web_app: { url: process.env.REGISTRATION_URL } }],
+            [{ text: '🔑 Авторизация', web_app: { url: process.env.AUTHORIZATION_URL } }, { text: '🗝 Регистрация', web_app: { url: process.env.REGISTRATION_URL } }],
         ]
     })
 };
 
 const botOptions = {
     reply_markup: JSON.stringify({
-        inline_keyboard: [
-            [{ text: 'ℹ️ Все задачи', callback_data: 'tasks' }, { text: 'ℹ️ Мои задачи', callback_data: 'thisTasks' }],
-            [{ text: '✅Взять задачу', callback_data: 'take' }, { text: '❌ Отклонить задачу', callback_data: 'reject' }],
-            [{ text: '❕ Утвердить задачу', callback_data: 'commit' }, { text: '❗️ Отправить задачу на доработку', callback_data: 'uncommit' }],
-        ]
+        keyboard: [
+            ['🔍 Все задачи', '💡 Персональные задачи'],
+            ['✅ Взять задачу', '❌ Отклонить задачу'],
+            ['❕ Утвердить задачу', '❗️ Отправить задачу на доработку']
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true
     })
 };
 
@@ -32,20 +34,36 @@ bot.on('message', async msg => {
     const chatId = msg.chat.id;
     const userName = msg.chat.first_name;
 
-    if (text === '/start') return bot.sendMessage(chatId, `✅ Привет, ${userName}! Я помогу вам разобраться с управлением над командными задачами.`, authOptions);
-    if (msg?.web_app_data?.data) {
+    if (text === '/start' && user) {
+        await bot.sendMessage(chatId, `👀 ${userName}, ты уже авторизован под логином ${user.login}!`)
+        return await sendMainMenu(chatId);
+    }
+    else if (text === '/start') {
+        await bot.sendMessage(chatId, `✅ Привет, ${userName}!`);
+        return await bot.sendMessage(chatId, `😎 Я помогу тебе разобраться с управлением над командными задачами, но для начала тебе предстоит пройти аутентификацию!`, authOptions);
+    }
+    else if (msg?.web_app_data?.data) {
         try {
             const data = JSON.parse(msg?.web_app_data?.data);
-            await bot.sendMessage(chatId, data?.login);
-            await bot.sendMessage(chatId, data?.fullName);
-            return bot.sendMessage(chatId, data);
+            user = await UserModel.findByPk(data.id);
+
+            if (user) {
+                await bot.sendMessage(chatId, `✅ Аутентификация успешно пройдена!`);
+                return await sendMainMenu(chatId);
+            }
         }
         catch (error) {
             console.log(error);
         }
     }
-    return bot.sendMessage(chatId, `⛔️ Я не понимаю о чем ты!`,);
+    else {
+        return bot.sendMessage(chatId, `⛔️ Я не понимаю о чем ты!`,);
+    }
 });
+
+async function sendMainMenu(chatId) {
+    await bot.sendMessage(chatId, '🏁 Ты сейчас находишься в главном меню!', botOptions);
+}
 
 // bot.on('callback_query', async msg => {
 //     const data = msg.data;
