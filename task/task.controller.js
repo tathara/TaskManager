@@ -1,9 +1,10 @@
-import { UserModel, TaskModel } from './db/models.js';
+import { UserModel, TaskModel } from '../db/models.js';
 
-export default class TaskManager {
+export default class TaskController {
     async getTask(taskId) {
         try {
             const task = await TaskModel.findByPk(taskId);
+
             return task;
         }
         catch (error) {
@@ -11,17 +12,16 @@ export default class TaskManager {
         }
     }
 
-    async addTask(task, userId) {
+    async addTask(task) {
         try {
-            const user = await UserModel.findByPk(userId);
             await TaskModel.create({
-                organizationId: user.organizationId,
                 name: task.name,
                 assignedRole: task.assignedRole,
                 description: task.description,
                 deadline: task.deadline,
                 complexity: task.complexity,
-                status: task.status
+                status: task.status,
+                organizationId: user.organizationId
             });
         }
         catch (error) {
@@ -29,11 +29,7 @@ export default class TaskManager {
         }
     }
 
-    restoreRejectedTask(task) {
-        this.tasks.active = { ...this.tasks.active, task };
-    }
-
-    async deleteTask(taskId, userId) {
+    async deleteTask(taskId) {
         try {
             const task = await TaskModel.findByPk(taskId);
             await task.destroy();
@@ -41,10 +37,6 @@ export default class TaskManager {
         catch (error) {
             console.log(error);
         }
-    }
-
-    deleteTakenTask(task) {
-        if (this.active[task]) delete this.tasks.active[task];
     }
 
     async commitTask(taskId) {
@@ -83,7 +75,13 @@ export default class TaskManager {
     async getAllTasks() {
         try {
             const tasks = await TaskModel.findAll();
-            return tasks;
+
+            if (tasks) {
+                return tasks;
+            }
+            else {
+                throw new Error('Задачи не найдены!');
+            }
         }
         catch (error) {
             console.log(error);
@@ -93,6 +91,7 @@ export default class TaskManager {
     async getCommitedTasks() {
         try {
             const tasks = await TaskModel.findAll({ where: { status: 'Утвержденный' } });
+
             return tasks;
         }
         catch (error) {
@@ -110,27 +109,29 @@ export default class TaskManager {
         }
     }
 
-    makeTasksString(pool) {
-        if (Object.keys(pool).length === 0) return "Список задач пуст!";
+    makeTasksString(tasks) {
+        if (tasks.length === 0) return "Список задач пуст!";
 
-        let result = "";
+        let taskString = "";
 
-        for (let [id, task] of Object.entries(pool)) {
-            let taskString = `🆔${id}. ${task.name}
-            ➡️Назначение: ${task.assignedRole}
-            🗒Описание: ${task.description}
-            📛Дедлайн: ${task.deadline}
-            🧐Трудоемкость: ${task.complexity}`;
-            result += taskString + '\n\n';
+        for (let task of tasks) {
+            let tasksChunk = `🆔 ${task.id}. ${task.name}\n`
+            tasksChunk += `🚩 Назначение: ${task.assignedRole}\n`
+            tasksChunk +=`📝 Описание: ${task.description}\n`
+            tasksChunk +=`📛 Дедлайн: ${task.deadline}\n`
+            tasksChunk +=`⚒ Сложность: ${task.complexity}\n`
+            tasksChunk +=`♻ Статус: ${task.status}`
+            taskString += tasksChunk + '\n\n';
         }
 
-        return result;
+        return taskString;
     }
 
     async getAllTasksString() {
         try {
             const tasks = await this.getAllTasks();
             const result = this.makeTasksString(tasks);
+
             return result;
         }
         catch (error) {

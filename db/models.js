@@ -26,7 +26,7 @@ const Task = db.define('task', {
     name: { type: DataTypes.STRING, allowNull: false },
     assignedRole: { type: DataTypes.STRING, allowNull: false },
     description: { type: DataTypes.STRING, allowNull: false },
-    deadline: { type: DataTypes.DATE, allowNull: false },
+    deadline: { type: DataTypes.STRING, allowNull: false },
     complexity: { type: DataTypes.STRING, allowNull: false },
     status: { type: DataTypes.STRING, allowNull: false }
 });
