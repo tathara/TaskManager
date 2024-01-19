@@ -58,6 +58,6 @@ bot.on('callback_query', async msg => {
         await botProcessor.processCallback(data, chatId);
     }
     catch (error) {
-
+        return bot.sendMessage(chatId, '⛔️ Произошла ошибка обработки запроса!');
     }
 });

@@ -6,6 +6,7 @@ export default class BotProcessor {
         this.userController = userController;
         this.botSender = botSender;
     }
+
     async processCallback(data, chatId) {
         switch (data) {
             case 'tasks':
@@ -15,32 +16,37 @@ export default class BotProcessor {
             case 'thisTasks':
                 await this.botSender.sendThisTasks(chatId);
                 break;
-
+                
             case 'take':
                 await this.botSender.sendAllTasks(chatId);
-                await this.processAction('take', chatId);
-                break;
-
+                return this.processAction('take', chatId);
+                
             case 'reject':
                 await this.botSender.sendThisTasks(chatId);
-                await this.processAction('reject', chatId);
-                break;
+                return this.processAction('reject', chatId);
 
             case 'commit':
                 await this.botSender.sendThisTasks(chatId);
-                await this.processAction('commit', chatId);
-                break;
+                return this.processAction('commit', chatId);
 
             case 'uncommit':
                 await this.botSender.sendCommitedTasks(chatId);
-                await this.processAction('uncommit', chatId);
-                break;
+                return this.processAction('uncommit', chatId);
 
             default:
                 await this.processInput(data, chatId);
         }
+        return this.botSender.sendMainMenu(chatId);
+    }
 
-        this.botSender.sendMainMenu();
+    async processAction(action, chatId) {
+        const tasks = action === 'take' ?
+            await this.userController.getAllTasks().then(allTasks => allTasks) :
+            await this.userController.getThisTasks().then(thisTasks => thisTasks);
+
+        const tasksOptions = makeMarkup(tasks, action);
+
+        await this.bot.sendMessage(chatId, 'Выберите номер задачи', tasksOptions);
     }
 
     async processInput(input, chatId) {
@@ -64,15 +70,5 @@ export default class BotProcessor {
                 await this.userController.uncommitTask(taskId);
                 return this.bot.sendMessage(chatId, `❗️ Ты отправил задачу №${taskId} на доработку!`);
         }
-    }
-
-    async processAction(action, chatId) {
-        const tasks = action === 'take' ?
-            await this.userController.getAllTasks().then(allTasks => allTasks) :
-            await this.userController.getThisTasks().then(thisTasks => thisTasks);
-
-        const tasksOptions = makeMarkup(tasks, action);
-
-        await this.bot.sendMessage(chatId, 'Выберите номер задачи', tasksOptions);
     }
 }

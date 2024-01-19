@@ -9,6 +9,7 @@ export default class BotSender {
     async sendMainMenu(chatId) {
         await this.bot.sendMessage(chatId, '🏁 Ты сейчас находишься в главном меню!', botOptions);
     }
+    
     async sendAllTasks(chatId) {
         const taskString = await this.userController.getAllTasksString();
         return this.bot.sendMessage(chatId, taskString);
