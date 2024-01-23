@@ -1,7 +1,7 @@
 export {
     authOptions,
     botOptions,
-    makeMarkup
+    makeTaskMarkup as makeMarkup
 }
 
 const authOptions = {
@@ -31,7 +31,7 @@ function fillKeys(tasks, action) {
     return tasks.map(task => [{ text: task.id, callback_data: `${action}_${task.id}` }]);
 }
 
-function makeMarkup(tasks, action) {
+function makeTaskMarkup(tasks, action) {
     const markup = {
         reply_markup: JSON.stringify({
             inline_keyboard: fillKeys(tasks, action),

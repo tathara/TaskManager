@@ -9,7 +9,6 @@ let userController, botSender, botProcessor;
 const telegramToken = process.env.TELEGRAM_TOKEN;
 const bot = new TelegramBot(telegramToken, { polling: true });
 
-
 bot.setMyCommands([
     { command: '/start', description: 'Аутентификация' },
 ]);
@@ -20,7 +19,8 @@ bot.on('message', async msg => {
     const userName = msg.chat.first_name;
 
     if (text === '/start' && userController) {
-        await bot.sendMessage(chatId, `👀 ${userName}, ты уже авторизован!`)
+        await bot.sendMessage(chatId, `👀 ${userName}, ты уже авторизован!`);
+        
         return botSender.sendMainMenu(chatId);
     }
     else if (text === '/start' && !userController) {

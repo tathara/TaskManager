@@ -1,4 +1,4 @@
-import { UserModel, TaskModel } from '../db/models.js';
+import { TaskModel } from '../db/models.js';
 
 export default class TaskController {
     async getTask(taskId) {
@@ -6,33 +6,6 @@ export default class TaskController {
             const task = await TaskModel.findByPk(taskId);
 
             return task;
-        }
-        catch (error) {
-            console.log(error);
-        }
-    }
-
-    async addTask(task) {
-        try {
-            await TaskModel.create({
-                name: task.name,
-                assignedRole: task.assignedRole,
-                description: task.description,
-                deadline: task.deadline,
-                complexity: task.complexity,
-                status: task.status,
-                organizationId: user.organizationId
-            });
-        }
-        catch (error) {
-            console.log(error);
-        }
-    }
-
-    async deleteTask(taskId) {
-        try {
-            const task = await TaskModel.findByPk(taskId);
-            await task.destroy();
         }
         catch (error) {
             console.log(error);
@@ -112,17 +85,19 @@ export default class TaskController {
     makeTasksString(tasks) {
         if (tasks.length === 0) return "Список задач пуст!";
 
-        let taskString = "";
+        const taskString = tasks.reduce((result, task) => {
+            result += `
+            🆔 ${task.id}. ${task.name}
+            🚩 Назначение: ${task.assignedRole}
+            📝 Описание: ${task.description}
+            📛 Дедлайн: ${task.deadline.toISOString()}
+            ⚒ Сложность: ${task.complexity}
+            ♻ Статус: ${task.status}
 
-        for (let task of tasks) {
-            let tasksChunk = `🆔 ${task.id}. ${task.name}\n`
-            tasksChunk += `🚩 Назначение: ${task.assignedRole}\n`
-            tasksChunk +=`📝 Описание: ${task.description}\n`
-            tasksChunk +=`📛 Дедлайн: ${task.deadline}\n`
-            tasksChunk +=`⚒ Сложность: ${task.complexity}\n`
-            tasksChunk +=`♻ Статус: ${task.status}`
-            taskString += tasksChunk + '\n\n';
-        }
+            `;
+
+            return result;
+        }, '');
 
         return taskString;
     }

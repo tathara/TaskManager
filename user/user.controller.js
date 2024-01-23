@@ -142,16 +142,4 @@ export default class UserController {
             console.log(error);
         }
     }
-
-    createTask(name, assignedRole, description, deadline, complexity) {
-        return new Task(name, assignedRole, description, deadline, complexity);
-    }
-
-    async addTask(task) {
-        await taskController.addTask(task);
-    }
-
-    async deleteTask(task) {
-        await taskController.deleteTask(task);
-    }
 }

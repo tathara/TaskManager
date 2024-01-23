@@ -1,4 +1,4 @@
-import { makeMarkup } from "./bot.options.js";
+import { makeTaskMarkup } from "./bot.options.js";
 
 export default class BotProcessor {
     constructor(bot, userController, botSender) {
@@ -44,7 +44,7 @@ export default class BotProcessor {
             await this.userController.getAllTasks().then(allTasks => allTasks) :
             await this.userController.getThisTasks().then(thisTasks => thisTasks);
 
-        const tasksOptions = makeMarkup(tasks, action);
+        const tasksOptions = makeTaskMarkup(tasks, action);
 
         await this.bot.sendMessage(chatId, 'Выберите номер задачи', tasksOptions);
     }
