@@ -1,7 +1,7 @@
 export {
     authOptions,
     botOptions,
-    makeTaskMarkup as makeMarkup
+    makeTaskMarkup
 }
 
 const authOptions = {
