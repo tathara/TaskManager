@@ -1,4 +1,3 @@
-import Task from '../task/task.js';
 import TaskController from '../task/task.controller.js';
 import { UserModel } from '../db/models.js';
 
